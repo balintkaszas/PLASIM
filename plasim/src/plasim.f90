@@ -479,6 +479,9 @@ plasimversion = "https://github.com/Edilbert/PLASIM/ : 15-Dec-2015"
 
       subroutine master
       use pumamod
+      use radmod
+
+
 
 !     ***************************
 !     * short initial timesteps *
@@ -526,6 +529,7 @@ plasimversion = "https://github.com/Edilbert/PLASIM/ : 15-Dec-2015"
       call updatim(nstep)  ! set date & time array ndatim
 
       nstep1 = nstep ! Remember start step for timing stats
+      !open(99, file = 'test_nstep.dat', status = 'new')  
 
       do while (mocd > 0 .or. nscd > 0)  ! main loop
 
@@ -575,6 +579,27 @@ plasimversion = "https://github.com/Edilbert/PLASIM/ : 15-Dec-2015"
 
          iyea  = ndatim(1)    ! current year
          imon  = ndatim(2)    ! current month
+         iday  = ndatim(3)    ! current day
+         
+         ! Ramping the solar constant: 
+         !
+         !
+         !
+         !write(99,*) nstep, iyea, ndatim(3)   
+
+         if (iday < 5.) then
+            gsol0 = 1367.0
+         endif
+         if (iday >= 5. .and. iday <= 10) then
+            rate = ( 1367.0 - 550. ) / 5.
+            gsol0 = 1367.0 - rate*(iday-5)
+         endif
+         if (iday > 10.) then
+            gsol0 = 550.
+         endif
+         !
+         !
+         !
          nstep = nstep + 1
          mstep = mstep + 1
          call updatim(nstep)  ! set date & time array ndatim
@@ -592,7 +617,6 @@ plasimversion = "https://github.com/Edilbert/PLASIM/ : 15-Dec-2015"
             if (nscd == 0) return
          endif
       enddo ! month countdown
-
       return
       end
 
@@ -1086,7 +1110,7 @@ plasimversion = "https://github.com/Edilbert/PLASIM/ : 15-Dec-2015"
       n_run_months = n_run_years * 12 + n_run_months
       iyea = n_run_months / 12
       imon = mod(n_run_months,12)
-
+      gsol0 = 500.
 !     Print some values
 
       write(nud,'(/,"**********************************")')
